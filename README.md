@@ -15,6 +15,12 @@ This project demonstrates a local CI/CD pipeline using Jenkins, GitHub webhooks,
 
 ---
 
+
+## Demo screenshots
+
+
+
+
 ## Directory Structure
 
 ```
@@ -300,4 +306,5 @@ docker restart jenkins
 * Rebuild the image using the provided Dockerfile
 * Recreate the pipeline configuration
 * Verify that the “GitHub hook trigger for GITScm polling” is enabled
+
 
