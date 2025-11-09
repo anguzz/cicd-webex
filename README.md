@@ -16,9 +16,32 @@ This project demonstrates a local CI/CD pipeline using Jenkins, GitHub webhooks,
 ---
 
 
-## Demo screenshots
+## Demo Screenshots
 
+1. **Git Commit Trigger**  
+A simple commit (`git commit -m "Trigger CI/CD test"`) and push to the `main` branch starts the Jenkins pipeline automatically.  
+![demo trigger](screenshots/demo_trigger.png)
 
+2. **Ngrok Tunnel Connection**  
+The local Jenkins instance is securely exposed to GitHub through ngrok.  
+Each `POST /github-webhook/ 200 OK` confirms a successful webhook delivery.  
+![demo ngrok](screenshots/demo_ngrok.png)
+
+3. **GitHub Webhook Delivery**  
+GitHub confirms the webhook `POST` to Jenkins (HTTP 200), verifying the repository–pipeline integration.  
+![demo github webhook](screenshots/demo_github_webhook.png)
+
+4. **Jenkins Cloud Relay**  
+The ngrok cloud relay forwards GitHub’s webhook requests to the local Jenkins container, enabling secure, real-time build triggers.  
+![jenkins cloud relay](screenshots/demo_ngrok_jenkins_relay.png)
+
+5. **Jenkins Pipeline Completion**  
+Jenkins automatically pulls the latest commit from GitHub and executes the Jenkinsfile stages/builds locally.  
+![demo jenkins local](screenshots/demo_jenkinsLocal.png)
+
+6. **WebEx Bot Notification**  
+The WebEx bot receives a real-time message from Jenkins with the build status and test summary.  
+![demo_webex_bot.png](screenshots/demo_webex_bot.png)
 
 
 ## Directory Structure
