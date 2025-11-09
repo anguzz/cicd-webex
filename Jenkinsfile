@@ -70,7 +70,7 @@ pipeline {
                 script {
                     def payload = """{
                         "roomId": "${WEBEX_ROOM_ID}",
-                        "markdown": " Jenkins build *SUCCESSFUL* for **cicd-webex** project.\\n\\n**Test Summary:**\\n${env.PYTEST_SUMMARY.replaceAll('"', '\\\\\"')}"
+                        "markdown": " Jenkins build *SUCCESSFUL* for **cicd-webex** project.\\n\\n**Test Summary:**\\n${(env.PYTEST_SUMMARY ?: "No test summary available").replaceAll('"', '\\\\\"')}"
                     }"""
                     sh """
                     curl -s -X POST \
