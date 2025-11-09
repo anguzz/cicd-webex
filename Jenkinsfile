@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.11-slim'
-            args '-u root'
-        }
-    }
+    agent any
 
     environment {
         VENV_DIR = 'venv'
@@ -18,12 +13,13 @@ pipeline {
             }
         }
 
-        stage('Check Python') {
+        stage('Setup Python') {
             steps {
                 sh '''
                 echo "Checking Python installation..."
+                python3 --version || echo "Python not found, installing..."
+                apt-get update && apt-get install -y python3 python3-pip python3-venv
                 python3 --version
-                pip --version
                 '''
             }
         }
@@ -42,13 +38,11 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    // Run tests, log output, and continue even on failure
                     sh '''
                     . ${VENV_DIR}/bin/activate
                     pytest -v | tee pytest_output.txt || true
                     '''
 
-                    // Capture the last 5 lines of pytest output for WebEx summary
                     env.PYTEST_SUMMARY = sh(
                         script: "tail -n 5 pytest_output.txt || echo 'No test summary found.'",
                         returnStdout: true
