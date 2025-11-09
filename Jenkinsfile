@@ -28,47 +28,47 @@ pipeline {
 
         stage('Run Tests') {
             steps {
+                // Continue even if tests fail, so we still send notifications
                 sh '''
                 . venv/bin/activate && pytest -v || true
                 '''
             }
         }
-
-        stage('Notify WebEx - Success') {
-            when {
-                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
-            }
-            steps {
-                withCredentials([
-                    string(credentialsId: 'WEBEX_BOT_TOKEN', variable: 'WEBEX_BOT_TOKEN'),
-                    string(credentialsId: 'WEBEX_ROOM_ID', variable: 'WEBEX_ROOM_ID')
-                ]) {
-                    sh '''
-                    curl -X POST \
-                      -H "Authorization: Bearer $WEBEX_BOT_TOKEN" \
-                      -H "Content-Type: application/json" \
-                      -d "{\"roomId\": \"$WEBEX_ROOM_ID\", \"markdown\": \" Jenkins build successful for *cicd-webex* calculator project!\"}" \
-                      https://webexapis.com/v1/messages
-                    '''
-                }
-            }
-        }
     }
 
     post {
+        success {
+            withCredentials([
+                string(credentialsId: 'WEBEX_BOT_TOKEN', variable: 'WEBEX_BOT_TOKEN'),
+                string(credentialsId: 'WEBEX_ROOM_ID', variable: 'WEBEX_ROOM_ID')
+            ]) {
+                sh '''
+                curl -s -X POST \
+                  -H "Authorization: Bearer $WEBEX_BOT_TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d "{\\"roomId\\": \\"$WEBEX_ROOM_ID\\", \\"markdown\\": \\"✅ Jenkins build successful for *cicd-webex* calculator project!\\"}" \
+                  https://webexapis.com/v1/messages
+                '''
+            }
+        }
+
         failure {
             withCredentials([
                 string(credentialsId: 'WEBEX_BOT_TOKEN', variable: 'WEBEX_BOT_TOKEN'),
                 string(credentialsId: 'WEBEX_ROOM_ID', variable: 'WEBEX_ROOM_ID')
             ]) {
                 sh '''
-                curl -X POST \
+                curl -s -X POST \
                   -H "Authorization: Bearer $WEBEX_BOT_TOKEN" \
                   -H "Content-Type: application/json" \
-                  -d "{\"roomId\": \"$WEBEX_ROOM_ID\", \"markdown\": \" Jenkins build failed for *cicd-webex* calculator project.\"}" \
+                  -d "{\\"roomId\\": \\"$WEBEX_ROOM_ID\\", \\"markdown\\": \\"❌ Jenkins build failed for *cicd-webex* calculator project.\\"}" \
                   https://webexapis.com/v1/messages
                 '''
             }
+        }
+
+        always {
+            echo 'Build finished, WebEx notification attempted.'
         }
     }
 }
