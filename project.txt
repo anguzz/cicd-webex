@@ -1,0 +1,51 @@
+Objective: Create an automated CI/CD pipeline that builds and tests code committed to GitHub, with build status notifications sent to a WebEx space.
+
+Total points: 40
+
+Requirements
+
+1. A GitHub repository
+2. Jenkins running in a Docker container
+3. ngrok for exposing local Jenkins instance to the internet
+4. A WebEx bot for receiving notifications
+
+Tasks
+
+1. Set up a GitHub repository with simple Python code. It should have unit tests for the Python code. You will commit the code to your repo from your local machine.
+2. Configure a webhook in the GitHub repository settings to listen to commits.
+3. Install and run Jenkins in a Docker container on your local machine.
+4. Use ngrok to expose local Jenkins instance to the internet.
+5. Configure Jenkins:
+   - Install necessary plugins
+   - Set up build steps and GitHub webhook trigger
+6. Create a WebEx bot and configure it to receive notifications.
+7. Integrate the WebEx bot with Jenkins for build notifications.
+8. Test the entire pipeline to ensure it works as expected: Commit code > Code committed on GitHub > Webhook on GitHub sends event to Jenkins through ngrok > Jenkins triggers a build > Jenkins notifies you though a message in your WebEx space.
+
+Submission: Screen Recording
+
+Create and submit a screen recording that demonstrates:
+
+1. Making a code change and committing to GitHub
+
+2. Code is committed to GitHub. Screen recording shows timestamp of code commit in the GitHub GUI (generally shown as ‘now’) (5 points)
+
+3. ngrok showing the incoming webhook in terminal/ console (10 points)
+
+4. Jenkins automatically triggering and running a build (10 points)
+
+5. The build process and results in Jenkins console output shows all python unit tests completing successfully and the build completing without errors (10 points)
+
+6. The WebEx space receiving the build status notification (5 points)
+
+Your recording should clearly show the entire process from code commit to WebEx notification, highlighting the integration of all components.
+
+This assignment aims to integrate and apply the various tools and concepts covered in the course, demonstrating your understanding of CI/CD principles, containerization, webhooks, Python unit tests and automated notifications in a practical scenario.
+
+Resources:
+
+1. This assignment follows up on pointers provided during our sync meeting. The screenshots displayed in class serve as clues to Jenkins configuration.
+
+2. The demo code, Python unit tests and Jenkins Groovy script pipeline are uploaded as indicated during the class and you may choose to use those or create your own.
+
+This is a graded assignment and tests your research and configuration skills.
