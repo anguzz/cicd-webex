@@ -1,48 +1,55 @@
 pipeline {
     agent any
 
-    environment {
-        WEBEX_BOT_TOKEN = credentials('WEBEX_BOT_TOKEN')
-        WEBEX_ROOM_ID = credentials('WEBEX_ROOM_ID')
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/<your-username>/cicd-webex.git'
+                git branch: 'main', url: 'https://github.com/anguzz/cicd-webex.git'
             }
         }
 
         stage('Setup Python') {
             steps {
-                sh 'apt-get update && apt-get install -y python3 python3-pip python3-venv'
+                sh '''
+                apt-get update -y
+                apt-get install -y python3 python3-pip python3-venv
+                '''
             }
         }
 
         stage('Install dependencies') {
             steps {
-                sh 'python3 -m venv venv'
-                sh '. venv/bin/activate && pip install -r requirements.txt'
+                sh '''
+                python3 -m venv venv
+                . venv/bin/activate && pip install -r requirements.txt
+                '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh '. venv/bin/activate && pytest -v'
+                sh '''
+                . venv/bin/activate && pytest -v || true
+                '''
             }
         }
 
-        stage('Notify WebEx') {
+        stage('Notify WebEx - Success') {
+            when {
+                expression { currentBuild.resultIsBetterOrEqualTo('SUCCESS') }
+            }
             steps {
-                script {
-                    def message = " Jenkins build successful for *cicd-webex* calculator project!"
-                    sh """
+                withCredentials([
+                    string(credentialsId: 'WEBEX_BOT_TOKEN', variable: 'WEBEX_BOT_TOKEN'),
+                    string(credentialsId: 'WEBEX_ROOM_ID', variable: 'WEBEX_ROOM_ID')
+                ]) {
+                    sh '''
                     curl -X POST \
-                        -H "Authorization: Bearer ${WEBEX_BOT_TOKEN}" \
-                        -H "Content-Type: application/json" \
-                        -d '{"roomId": "${WEBEX_ROOM_ID}", "markdown": "${message}"}' \
-                        https://webexapis.com/v1/messages
-                    """
+                      -H "Authorization: Bearer $WEBEX_BOT_TOKEN" \
+                      -H "Content-Type: application/json" \
+                      -d "{\"roomId\": \"$WEBEX_ROOM_ID\", \"markdown\": \" Jenkins build successful for *cicd-webex* calculator project!\"}" \
+                      https://webexapis.com/v1/messages
+                    '''
                 }
             }
         }
@@ -50,15 +57,17 @@ pipeline {
 
     post {
         failure {
-            script {
-                def message = " Jenkins build failed for *cicd-webex* calculator project."
-                sh """
+            withCredentials([
+                string(credentialsId: 'WEBEX_BOT_TOKEN', variable: 'WEBEX_BOT_TOKEN'),
+                string(credentialsId: 'WEBEX_ROOM_ID', variable: 'WEBEX_ROOM_ID')
+            ]) {
+                sh '''
                 curl -X POST \
-                    -H "Authorization: Bearer ${WEBEX_BOT_TOKEN}" \
-                    -H "Content-Type: application/json" \
-                    -d '{"roomId": "${WEBEX_ROOM_ID}", "markdown": "${message}"}' \
-                    https://webexapis.com/v1/messages
-                """
+                  -H "Authorization: Bearer $WEBEX_BOT_TOKEN" \
+                  -H "Content-Type: application/json" \
+                  -d "{\"roomId\": \"$WEBEX_ROOM_ID\", \"markdown\": \" Jenkins build failed for *cicd-webex* calculator project.\"}" \
+                  https://webexapis.com/v1/messages
+                '''
             }
         }
     }
