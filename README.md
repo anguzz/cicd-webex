@@ -221,3 +221,136 @@ cicd-webex/
 ├── README.md
 └── project.txt
 ```
+
+
+
+## Troubleshooting WebEx Notifications
+
+### 1. Jenkins webhook works but no WebEx message
+
+If Jenkins builds successfully but no WebEx message appears:
+
+**Cause:**
+Usually, the WebEx API request fails silently due to:
+
+* An expired or invalid **Bot Access Token**
+* The bot not being added to the WebEx space (room)
+* A wrong or outdated **room ID**
+
+**Fix:**
+
+1. Verify that your WebEx credentials in Jenkins are correct:
+
+   * Go to **Manage Jenkins → Credentials → Global credentials (unrestricted)**
+   * Confirm both entries exist:
+
+     * `WEBEX_BOT_TOKEN`
+     * `WEBEX_ROOM_ID`
+2. Ensure your **bot is a member** of the WebEx space you’re posting to.
+
+   * In WebEx, open your space → click **... → Add people** → invite your bot email (e.g. `myjenkinsbot@webex.bot`).
+3. Restart Jenkins:
+
+   ```bash
+   docker restart jenkins
+   ```
+
+---
+
+### 2. Testing the bot token manually
+
+Before testing inside Jenkins, verify the WebEx API token locally to ensure it’s valid.
+
+#### a. Check token validity
+
+```bash
+curl -s -H "Authorization: Bearer <WEBEX_BOT_TOKEN>" \
+  https://webexapis.com/v1/people/me | jq
+```
+
+**Expected output:**
+
+```json
+{
+  "id": "...",
+  "emails": ["your-bot@webex.bot"],
+  "displayName": "Your Bot Name",
+  "type": "bot"
+}
+```
+
+If you see:
+
+```json
+{"message":"The request requires a valid access token..."}
+```
+
+→ your token has expired or was regenerated.
+Go to [https://developer.webex.com/my-apps](https://developer.webex.com/my-apps), open your bot, and copy the **Bot Access Token** again.
+
+---
+
+### 3. Verify your bot can post messages
+
+Run this command locally to test your token and room ID:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer <WEBEX_BOT_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"roomId": "<WEBEX_ROOM_ID>", "markdown": " WebEx local token test from curl"}' \
+  https://webexapis.com/v1/messages
+```
+
+**If it returns:**
+
+```json
+{"message":"Could not find a room with provided ID."}
+```
+
+→ Your bot is not added to that room.
+Add the bot manually to the WebEx space, then try again.
+
+**If it returns:**
+
+```json
+{"id":"...","roomId":"...","text":" WebEx local token test from curl"}
+```
+
+→ The credentials are valid, and messages should also post successfully from Jenkins.
+
+---
+
+### 4. Finding your WebEx Room ID
+
+You can list all accessible rooms for your bot:
+
+```bash
+curl -s https://webexapis.com/v1/rooms \
+  -H "Authorization: Bearer <WEBEX_BOT_TOKEN>" \
+  | jq '.items[] | {title, id}'
+```
+
+Use the **`id`** for the room where you want Jenkins notifications to appear, and set it in Jenkins as `WEBEX_ROOM_ID`.
+
+---
+
+### 5. Common WebEx API responses
+
+| Response                                    | Meaning                           | Fix                                          |
+| ------------------------------------------- | --------------------------------- | -------------------------------------------- |
+| `The request requires a valid access token` | Invalid or expired bot token      | Regenerate your Bot Access Token             |
+| `Could not find a room with provided ID`    | Bot not added to the room         | Invite the bot to the space                  |
+| `401 Unauthorized`                          | Token not recognized by WebEx API | Use the bot token, not personal access token |
+
+---
+
+### 6. Quick validation sequence
+
+Once you’ve confirmed the token and room ID:
+
+1. Test locally with `curl` → message appears 
+2. Update credentials in Jenkins → Save 
+3. Restart Jenkins container → `docker restart jenkins` 
+4. Push to GitHub → Jenkins auto-triggers → WebEx message posts 
+

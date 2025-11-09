@@ -46,7 +46,7 @@ pipeline {
                 curl -s -X POST \
                   -H "Authorization: Bearer $WEBEX_BOT_TOKEN" \
                   -H "Content-Type: application/json" \
-                  -d "{\\"roomId\\": \\"$WEBEX_ROOM_ID\\", \\"markdown\\": \\"✅ Jenkins build successful for *cicd-webex* calculator project!\\"}" \
+                  -d "{\\"roomId\\": \\"$WEBEX_ROOM_ID\\", \\"markdown\\": \\" Jenkins build successful for *cicd-webex* calculator project!\\"}" \
                   https://webexapis.com/v1/messages
                 '''
             }
@@ -61,7 +61,7 @@ pipeline {
                 curl -s -X POST \
                   -H "Authorization: Bearer $WEBEX_BOT_TOKEN" \
                   -H "Content-Type: application/json" \
-                  -d "{\\"roomId\\": \\"$WEBEX_ROOM_ID\\", \\"markdown\\": \\"❌ Jenkins build failed for *cicd-webex* calculator project.\\"}" \
+                  -d "{\\"roomId\\": \\"$WEBEX_ROOM_ID\\", \\"markdown\\": \\" Jenkins build failed for *cicd-webex* calculator project.\\"}" \
                   https://webexapis.com/v1/messages
                 '''
             }
