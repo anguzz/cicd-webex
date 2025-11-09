@@ -301,5 +301,3 @@ docker restart jenkins
 * Recreate the pipeline configuration
 * Verify that the “GitHub hook trigger for GITScm polling” is enabled
 
----
-
